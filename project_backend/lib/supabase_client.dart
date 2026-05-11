@@ -1,13 +1,15 @@
-import 'package:dotenv/dotenv.dart';
+import 'dart:io';
 import 'package:supabase/supabase.dart';
 
 late final SupabaseClient supabase;
 
 void initSupabase() {
-  final env = DotEnv()..load();
+  final url = Platform.environment['SUPABASE_URL']!;
+  final key = Platform.environment['SUPABASE_SERVICE_ROLE_KEY']!;
+  
   supabase = SupabaseClient(
-    env['SUPABASE_URL']!,
-    env['SUPABASE_SERVICE_ROLE_KEY']!,
+    url,
+    key,
     authOptions: const AuthClientOptions(
       authFlowType: AuthFlowType.implicit,
     ),
