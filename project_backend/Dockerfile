@@ -1,18 +1,26 @@
 FROM dart:stable AS build
 WORKDIR /app
+
+# Install Dart Frog CLI
+RUN dart pub global activate dart_frog_cli
+ENV PATH="$PATH:/root/.pub-cache/bin"
+
+# Get dependencies
 COPY pubspec.* ./
 RUN dart pub get
-COPY . .
-RUN dart pub run build_runner build --delete-conflicting-outputs
-RUN dart compile exe bin/server.dart -o bin/server
 
-FROM debian:bookworm-slim
+# Copy everything
+COPY . .
+
+# This generates bin/server.dart automatically
+RUN dart_frog build
+
+# Get dependencies for built server
+WORKDIR /app/build
+RUN dart pub get
+
+FROM dart:stable
 WORKDIR /app
-# Add missing libraries
-RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=build /app/bin/server ./bin/server
+COPY --from=build /app/build .
 EXPOSE 8080
-CMD ["./bin/server"]
+CMD ["dart", "bin/server.dart"]
