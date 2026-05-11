@@ -5,22 +5,19 @@ WORKDIR /app
 RUN dart pub global activate dart_frog_cli
 ENV PATH="$PATH:/root/.pub-cache/bin"
 
-# Copy pubspec first
+# Copy pubspec files
 COPY pubspec.yaml pubspec.lock ./
 
 # Get dependencies
 RUN dart pub get
 
-# Copy everything else
+# Copy rest of project
 COPY . .
 
-# Run pub get again to make sure everything is resolved
-RUN dart pub get --no-precompile
-
-# Build
+# Build dart frog server (generates bin/server.dart automatically)
 RUN dart_frog build
 
-# Get dependencies for built output
+# Get dependencies for built server
 WORKDIR /app/build
 RUN dart pub get
 
